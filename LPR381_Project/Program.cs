@@ -11,6 +11,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Solver.Core.IO;
+
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -48,7 +50,8 @@ while (true)
             case "1":
                 Console.Write("Enter input file path: ");
                 var path = (Console.ReadLine() ?? "").Trim('"', ' ');
-                currentModel = ParseInputFile(path);
+                var fileParser = new ModelParser(); // obj for ModelParser class
+                currentModel = ParseInputFile(path); // method to upload file is invoked here
                 currentModelName = currentModel.Name ?? System.IO.Path.GetFileName(path);
                 Console.WriteLine($"Loaded '{currentModelName}' with {currentModel.C.Length} vars and {currentModel.B.Length} constraints.\n");
                 break;
