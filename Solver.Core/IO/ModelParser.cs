@@ -9,9 +9,9 @@ using System.IO;
 
 namespace Solver.Core.IO
 {
-    public class ModelParser
+    public static class ModelParser
     {
-        public LpModel ParseInputFile(string path)
+        public static LpModel ParseInputFile(string path)
         {
             if (!File.Exists(path)) throw new FileNotFoundException("Input file not found.", path);
             var lines = File.ReadAllLines(path)
@@ -81,17 +81,17 @@ namespace Solver.Core.IO
             };
         }
 
-        private List<string> Tokenize(string line)
+        private static List<string> Tokenize(string line)
             => line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
-        private bool IsSignRestrictionLine(List<string> tokens)
+        private static bool IsSignRestrictionLine(List<string> tokens)
         {
             if (tokens.Count == 0) return false;
             var ok = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "+", "-", "urs", "int", "bin" };
             return tokens.All(t => ok.Contains(t));
         }
 
-        private VarSign ParseVarSign(string t) => t.ToLower() switch
+        private static VarSign ParseVarSign(string t) => t.ToLower() switch
         {
             "+" => VarSign.Plus,
             "-" => VarSign.Minus,
@@ -101,7 +101,7 @@ namespace Solver.Core.IO
             _ => throw new InvalidOperationException($"Unknown sign restriction: {t}")
         };
 
-        private double ParseSigned(string token)
+        private static double ParseSigned(string token)
         {
             if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out var v))
                 return v;

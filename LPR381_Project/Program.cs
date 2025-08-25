@@ -50,9 +50,8 @@ while (true)
             case "1":
                 Console.Write("Enter input file path: ");
                 var path = (Console.ReadLine() ?? "").Trim('"', ' ');
-                var fileParser = new ModelParser(); // obj for ModelParser class
-                currentModel = ParseInputFile(path); // method to upload file is invoked here
-                currentModelName = currentModel.Name ?? System.IO.Path.GetFileName(path);
+                currentModel = ModelParser.ParseInputFile(path);   //static call
+                currentModelName = currentModel.Name ?? Path.GetFileName(path);
                 Console.WriteLine($"Loaded '{currentModelName}' with {currentModel.C.Length} vars and {currentModel.B.Length} constraints.\n");
                 break;
 
