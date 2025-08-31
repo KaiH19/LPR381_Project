@@ -15,7 +15,7 @@ namespace Solver.Simplex.Revised;
 public sealed class RevisedSimplexSolver : ISolver
 {
     public string Name => "Revised Primal Simplex";
-
+    private const double TOL = 1e-9;
     private readonly StringBuilder _logBuilder = new();
     private int _iterationCount = 0;
 
@@ -171,18 +171,21 @@ public sealed class RevisedSimplexSolver : ISolver
             LogMessage($"π = [{string.Join(", ", pi.Select(FormatNumber))}]");
             
             LogMessage("Calculating reduced costs for non-basic variables:");
-            var (enteringCol, minReducedCost) = FindEnteringVariable(state, pi);
-            
+            var (enteringCol, bestReducedCost) = FindEnteringVariable(state, pi);
+
             if (enteringCol == -1)
             {
                 LogMessage("*** OPTIMAL SOLUTION FOUND ***");
-                LogMessage("All reduced costs are non-negative (for maximization)");
+                if (state.IsMaximization)
+                    LogMessage("All reduced costs are ≤ 0 (within tolerance) for maximization");
+                else
+                    LogMessage("All reduced costs are ≥ 0 (within tolerance) for minimization");
                 LogMessage();
-                
+
                 return CreateOptimalResult(state, xB, objectiveValue, pi);
             }
 
-            LogMessage($"Entering variable: {state.VariableNames[enteringCol]} (reduced cost: {FormatNumber(minReducedCost)})");
+            LogMessage($"Entering variable: {state.VariableNames[enteringCol]} (reduced cost: {FormatNumber(bestReducedCost)})");
             LogMessage();
 
             // Step 3: Direction finding - solve B * d = A_j where j is entering variable
@@ -267,37 +270,45 @@ public sealed class RevisedSimplexSolver : ISolver
         return MultiplyVector(cB, state.BInverse);
     }
 
-    private (int enteringCol, double minReducedCost) FindEnteringVariable(RevisedSimplexState state, double[] pi)
+    private (int enteringCol, double bestReducedCost) FindEnteringVariable(RevisedSimplexState state, double[] pi)
     {
         int enteringCol = -1;
-        double bestReducedCost = 0;
-        var rows = state.A.GetLength(0);
-        var cols = state.A.GetLength(1);
+        double bestReducedCost = state.IsMaximization ? TOL : -TOL; // threshold
+
+        int rows = state.A.GetLength(0);
+        int cols = state.A.GetLength(1);
 
         for (int j = 0; j < cols; j++)
         {
-            // Skip if j is already in basis
             if (state.Basis.Contains(j)) continue;
 
-            // Calculate reduced cost: c_j - π^T * A_j
-            var columnJ = GetColumn(state.A, j);
-            double piAj = 0;
-            for (int i = 0; i < pi.Length; i++)
+            // r_j = c_j - π^T a_j
+            double piAj = 0.0;
+            for (int i = 0; i < rows; i++)
+                piAj += pi[i] * state.A[i, j];
+
+            double cj = (j < state.C.Length) ? state.C[j] : 0.0;
+            double rc = cj - piAj;
+
+            LogMessage($"  Variable {state.VariableNames[j]}: c_j - π^T*A_j = {FormatNumber(cj)} - {FormatNumber(piAj)} = {FormatNumber(rc)}");
+
+            if (state.IsMaximization)
             {
-                piAj += pi[i] * columnJ[i];
+                // MAX: enter if rc is the most positive, strictly > TOL
+                if (rc > bestReducedCost)
+                {
+                    bestReducedCost = rc;
+                    enteringCol = j;
+                }
             }
-
-            double cj = (j < state.C.Length) ? state.C[j] : 0;
-            double reducedCost = cj - piAj;
-
-            LogMessage($"  Variable {state.VariableNames[j]}: c_j - π^T*A_j = {FormatNumber(cj)} - {FormatNumber(piAj)} = {FormatNumber(reducedCost)}");
-
-            // For maximization (after canonical conversion), we want the most negative reduced cost
-            // For minimization (after canonical conversion), we want the most positive reduced cost
-            if (reducedCost < bestReducedCost)
+            else
             {
-                bestReducedCost = reducedCost;
-                enteringCol = j;
+                // MIN: enter if rc is the most negative, strictly < -TOL
+                if (rc < bestReducedCost)
+                {
+                    bestReducedCost = rc;
+                    enteringCol = j;
+                }
             }
         }
 
