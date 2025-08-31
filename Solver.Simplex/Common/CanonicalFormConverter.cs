@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +22,7 @@ public sealed class CanonicalFormConverter
         public required string FormattedProblem { get; init; }
     }
 
-  
+
     public static CanonicalForm Convert(LpModel model)
     {
         if (model == null) throw new ArgumentNullException(nameof(model));
@@ -36,7 +36,7 @@ public sealed class CanonicalFormConverter
         var currentVars = expandedC.Length;
 
         // Step 2: Add slack/surplus variables and handle constraint types
-        var (finalC, finalA, finalB, finalVarNames, slackSurplusMapping) = 
+        var (finalC, finalA, finalB, finalVarNames, slackSurplusMapping) =
             HandleConstraints(expandedC, expandedA, model.B, model.RelOps, variableNames, isMaximization);
 
         // Step 3: Ensure all RHS values are non-negative
@@ -66,7 +66,7 @@ public sealed class CanonicalFormConverter
         };
     }
 
-    private static (double[] C, double[,] A, string[] varNames, int[] mapping) 
+    private static (double[] C, double[,] A, string[] varNames, int[] mapping)
         HandleVariableSignRestrictions(LpModel model)
     {
         var newC = new List<double>();
@@ -245,18 +245,18 @@ public sealed class CanonicalFormConverter
         }
     }
 
-    private static string FormatCanonicalProblem(LpModel original, double[] C, double[,] A, double[] B, 
+    private static string FormatCanonicalProblem(LpModel original, double[] C, double[,] A, double[] B,
         string[] varNames, bool isMaximization)
     {
         var sb = new StringBuilder();
-        
+
         sb.AppendLine("CANONICAL FORM");
         sb.AppendLine(new string('=', 50));
-        
+
         // Objective function
         sb.Append(isMaximization ? "Maximize: " : "Minimize: ");
         sb.Append("z = ");
-        
+
         for (int j = 0; j < C.Length; j++)
         {
             if (j > 0)
@@ -276,7 +276,7 @@ public sealed class CanonicalFormConverter
         sb.AppendLine("Subject to:");
         var rows = A.GetLength(0);
         var cols = A.GetLength(1);
-        
+
         for (int i = 0; i < rows; i++)
         {
             sb.Append("  ");
@@ -294,7 +294,7 @@ public sealed class CanonicalFormConverter
             }
             sb.AppendLine($" = {B[i]:0.###}");
         }
-        
+
         sb.AppendLine();
         sb.Append("  ");
         for (int j = 0; j < varNames.Length; j++)
