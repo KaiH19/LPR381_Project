@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Solver.Core.Interfaces;
 using Solver.Core.Models;
 using Solver.Core.Utils;
-using System.Text;
 
 namespace Solver.Knapsack;
 

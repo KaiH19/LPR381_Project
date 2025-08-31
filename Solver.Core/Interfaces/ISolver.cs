@@ -17,6 +17,6 @@ public sealed class SolverOptions
 {
     public bool Verbose { get; init; } = true;
     public string? OutputFile { get; init; }
-    public int MaxIterations { get; init; } = 10000;
+    public int MaxIterations { get; init; } = 50;
 }
 

@@ -20,7 +20,7 @@ var solvers = new (string Key, ISolver Impl, string Label)[]
 {
     ("2", new PrimalSimplexSolver(),  "Primal Simplex (Tableau)"),
     ("3", new RevisedSimplexSolver(), "Revised Primal Simplex"),
-    ("4", new BbSimplexSolver(),      "Branch & Bound (Simplex-based)"),
+    ("4", new FixedBbSimplexSolver(),      "Branch & Bound (Simplex-based)"),
     ("5", new CuttingPlaneSolver(),   "Cutting Plane (Gomory)"),
     ("7", new KnapsackSolver(),       "Knapsack (0/1) Branch & Bound")
 };
